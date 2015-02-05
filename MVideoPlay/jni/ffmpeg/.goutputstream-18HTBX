@@ -1,0 +1,56 @@
+#!/bin/sh
+export PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.4.3/prebuilt
+export PLATFORM=$NDK/platforms/android-14/arch-arm
+export PREFIX=../libs
+
+build_one(){
+./configure --target-os=linux --prefix=$PREFIX \
+--enable-cross-compile \
+--enable-runtime-cpudetect \
+--arch=arm \
+--cc=$PREBUILT/linux-x86/bin/arm-linux-androideabi-gcc \
+--cross-prefix=$PREBUILT/linux-x86/bin/arm-linux-androideabi- \
+--disable-stripping \
+--nm=$PREBUILT/linux-x86/bin/arm-linux-androideabi-nm \
+--sysroot=$PLATFORM \
+--enable-nonfree \
+--enable-version3 \
+--disable-everything \
+--enable-gpl \
+--disable-programs \
+--disable-ffmpeg \
+--disable-ffplay \
+--disable-ffprobe \
+--disable-ffserver \
+--disable-doc \
+--disable-htmlpages \
+--disable-manpages \
+--disable-podpages \
+--disable-txtpages  \
+--disable-avdevice \
+--disable-swresample \
+--disable-swscale \
+--disable-postproc \
+--disable-avfilter \
+--enable-avresample \
+--enable-demuxer=asf \
+--enable-decoder=wmv3 \
+--enable-neon \
+--disable-indevs \
+--disable-outdevs \
+--disable-devices \
+--disable-filters \
+--enable-pic \
+--extra-cflags="-I$PREFIX/include -fPIC -DANDROID -D__thumb__ -mthumb -Wfatal-errors -Wfloat-equal -Wno-deprecated -mfloat-abi=softfp -marm -mfpu=neon -march=armv7-a -mtune=cortex-a8 -D__ARM_ARCH_7A__" \
+--extra-ldflags="-L$PREFIX/lib" \
+--sysroot=$PLATFORM \
+
+#open CONFIG_HPELDSP
+sed -i 's/CONFIG_HPELDSP 0/CONFIG_HPELDSP 1/g' config.h
+sed -i 's/!CONFIG_HPELDSP=yes/CONFIG_HPELDSP=yes/g' config.mak
+
+#$PREBUILT/linux-x86/bin/arm-linux-androideabi-ar d libavcodec/libavcodec.a inverse.o
+#$PREBUILT/linux-x86/bin/arm-linux-androideabi-ld -rpath-link=$PLATFORM/usr/lib -L$PLATFORM/usr/lib -L$PREFIX/lib  -soname libffmpeg.so -shared -nostdlib  -z,noexecstack -Bsymbolic --whole-archive --no-undefined -o $PREFIX/libffmpeg.so libavcodec/libavcodec.a libavfilter/libavfilter.a libavresample/libavresample.a libavformat/libavformat.a libavutil/libavutil.a libswscale/libswscale.a -lc -lm -lz -ldl -llog -lx264 --warn-once --dynamic-linker=/system/bin/linker $PREBUILT/linux-x86/lib/gcc/arm-linux-androideabi/4.4.3/libgcc.a
+}
+
+build_one

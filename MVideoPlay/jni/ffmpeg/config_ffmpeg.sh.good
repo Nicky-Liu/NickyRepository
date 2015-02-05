@@ -1,0 +1,52 @@
+#!/bin/sh
+export PREBUILT=$NDK/toolchains/arm-linux-androideabi-4.4.3/prebuilt
+export PLATFORM=$NDK/platforms/android-14/arch-arm
+export PREFIX=../libs
+
+build_one(){
+./configure --target-os=linux --prefix=$PREFIX \
+--enable-cross-compile \
+--enable-runtime-cpudetect \
+--arch=arm \
+--cc=$PREBUILT/linux-x86/bin/arm-linux-androideabi-gcc \
+--cross-prefix=$PREBUILT/linux-x86/bin/arm-linux-androideabi- \
+--disable-stripping \
+--nm=$PREBUILT/linux-x86/bin/arm-linux-androideabi-nm \
+--sysroot=$PLATFORM \
+--disable-symver \
+--enable-shared \
+--disable-static \
+--enable-nonfree \
+--enable-version3 \
+--enable-gpl \
+--disable-doc \
+--disable-programs \
+--disable-ffplay \
+--disable-ffprobe \
+--disable-ffserver \
+--disable-htmlpages \
+--disable-manpages \
+--disable-podpages \
+--disable-txtpages  \
+--disable-postproc \
+--enable-demuxer=rtsp \
+--enable-muxer=rtsp \
+--disable-ffprobe \
+--enable-protocol=rtp \
+--enable-hwaccels \
+--enable-neon \
+--disable-devices \
+--disable-avdevice \
+--enable-pic \
+--extra-cflags="-fPIC -DANDROID -D__thumb__ -mthumb -Wfatal-errors -Wfloat-equal -Wno-deprecated -mfloat-abi=softfp -marm -mfpu=neon -march=armv7-a -mtune=cortex-a8 -D__ARM_ARCH_7A__" 
+
+
+#open CONFIG_HPELDSP
+sed -i 's/CONFIG_HPELDSP 0/CONFIG_HPELDSP 1/g' config.h
+sed -i 's/!CONFIG_HPELDSP=yes/CONFIG_HPELDSP=yes/g' config.mak
+
+#$PREBUILT/linux-x86/bin/arm-linux-androideabi-ar d libavcodec/libavcodec.a inverse.o
+#$PREBUILT/linux-x86/bin/arm-linux-androideabi-ld -rpath-link=$PLATFORM/usr/lib -L$PLATFORM/usr/lib -L$PREFIX/lib  -soname libffmpeg.so -shared -nostdlib  -z,noexecstack -Bsymbolic --whole-archive --no-undefined -o $PREFIX/libffmpeg.so libavcodec/libavcodec.a libavfilter/libavfilter.a libavresample/libavresample.a libavformat/libavformat.a libavutil/libavutil.a libswscale/libswscale.a -lc -lm -lz -ldl -llog -lx264 --warn-once --dynamic-linker=/system/bin/linker $PREBUILT/linux-x86/lib/gcc/arm-linux-androideabi/4.4.3/libgcc.a
+}
+
+build_one
