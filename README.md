@@ -1,4 +1,0 @@
-NickyRepository
-===============
-
-This my repository
